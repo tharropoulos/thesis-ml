@@ -1,0 +1,7 @@
+/export
+/assets
+/venv
+/plots
+/.vscode
+/__pycache__
+.env
