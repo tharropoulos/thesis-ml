@@ -1,15 +1,16 @@
 import os
+import textwrap
+from math import ceil
 from types import new_class
-import pandas as pd
-import matplotlib.gridspec as gridspec
-import mplcatppuccin
+
+import catppuccin
 import matplotlib as mpl
+import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import textwrap
 import numpy as np
+import pandas as pd
 from matplotlib.patches import FancyBboxPatch
-from math import ceil
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 directory = os.path.join(script_dir, "export")
@@ -30,7 +31,7 @@ csv_files = {
     "rating_query": os.path.join(directory, "rating.csv"),
 }
 
-mpl.style.use("mocha")
+mpl.style.use(catppuccin.PALETTE.mocha.identifier)
 
 
 def plot_intervention_ratio_by_subject():
@@ -300,6 +301,187 @@ def plot_total_metrics_by_subject():
     plt.savefig(os.path.join(plots_dir, "total_metrics_by_subject.png"), dpi=300)
 
 
+def plot_data():
+    df = pd.read_csv("/home/fanis/code/python-db/export/grouped_data_seq_summary.csv")
+
+    df["rating_class"] = df["rating_class"].str.title()
+    # Group by 'rating_class' and find the maximum 'count' for each group
+    max_counts = df.groupby("rating_class")["count"].max().reset_index()
+
+    # Plot the max of the sequential counts
+    ax = max_counts.plot.bar(x="rating_class", y="count", rot=0, width=0.3)
+    new_patches = []
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+        color = patch.get_facecolor()
+        p_bbox = FancyBboxPatch(
+            (bb.xmin, bb.ymin),
+            abs(bb.width),
+            abs(bb.height),
+            boxstyle="round,pad=-0.0140,rounding_size=0.015",
+            ec="none",
+            fc=color,
+        )
+        patch.remove()
+        new_patches.append(p_bbox)
+    for patch in new_patches:
+        ax.add_patch(patch)
+    plt.title("Max of Sequential Positive/Negative Ratings")
+    plt.ylabel("Count")
+    plt.xlabel("Rating Class")
+    # Capitalize the first letter of each word in the legend
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [label.title() for label in labels]
+    ax.legend(handles, labels)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "max_sequential.png"), dpi=300)
+
+
+def plot_data_avg():
+    df = pd.read_csv("/home/fanis/code/python-db/export/grouped_data_seq_summary.csv")
+
+    # Group by 'rating_class' and find the average 'count' for each group
+    df["rating_class"] = df["rating_class"].str.title()
+    avg_counts = df.groupby("rating_class")["count"].mean().reset_index()
+
+    # Plot the average of the sequential counts
+    ax = avg_counts.plot.bar(x="rating_class", y="count", rot=0, width=0.3)
+    new_patches = []
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+        color = patch.get_facecolor()
+        p_bbox = FancyBboxPatch(
+            (bb.xmin, bb.ymin),
+            abs(bb.width),
+            abs(bb.height),
+            boxstyle="round,pad=-0.0140,rounding_size=0.015",
+            ec="none",
+            fc=color,
+        )
+        patch.remove()
+        new_patches.append(p_bbox)
+    for patch in new_patches:
+        ax.add_patch(patch)
+    plt.title("Average of Sequential Positive/Negative Ratings")
+    plt.ylabel("Count")
+    plt.xlabel("Rating Class")
+    # Capitalize the first letter of each word in the legend
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [label.title() for label in labels]
+    ax.legend(handles, labels)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "avg_sequential.png"), dpi=300)
+
+
+def plot_streaks():
+    df = pd.read_csv("/home/fanis/code/python-db/export/streaks.csv")
+
+    # Group by 'rating_class' and find the average 'count' for each group
+    df["type"] = df["type"].str.title()
+    grouped = df.groupby("type")
+    streak_counts = grouped.size()
+
+    # Plot the average of the sequential counts
+    ax = streak_counts.plot.bar(x="type", y="count", rot=0, width=0.3)
+    new_patches = []
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+        color = patch.get_facecolor()
+        p_bbox = FancyBboxPatch(
+            (bb.xmin, bb.ymin),
+            abs(bb.width),
+            abs(bb.height),
+            boxstyle="round,pad=-0.0140,rounding_size=0.015",
+            ec="none",
+            fc=color,
+        )
+        patch.remove()
+        new_patches.append(p_bbox)
+    for patch in new_patches:
+        ax.add_patch(patch)
+    plt.title("Number of Times More Than Three Consecutive Ratings Were Given")
+    plt.ylabel("Count")
+    plt.xlabel("Rating Class")
+    # Capitalize the first letter of each word in the legend
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [label.title() for label in labels]
+    ax.legend(handles, labels)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "consecutive_streaks.png"), dpi=300)
+
+    average_subjects = df.groupby("type")["num_subjects"].mean()
+    print(average_subjects)
+    ax = average_subjects.plot.bar(x="type", y="num_subjects", rot=0, width=0.3)
+    new_patches = []
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+        color = patch.get_facecolor()
+        p_bbox = FancyBboxPatch(
+            (bb.xmin, bb.ymin),
+            abs(bb.width),
+            abs(bb.height),
+            boxstyle="round,pad=-0.0140,rounding_size=0.015",
+            ec="none",
+            fc=color,
+        )
+        patch.remove()
+        new_patches.append(p_bbox)
+    for patch in new_patches:
+        ax.add_patch(patch)
+    plt.title("Average Number of Subjects Covered During the Streaks")
+    plt.xlabel("Type of Streak")
+    plt.ylabel("Average Number of Subjects")
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [label.title() for label in labels]
+    ax.legend(handles, labels)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "consecutive_streaks_subjects.png"), dpi=300)
+
+
+def num_subjs():
+    df = pd.read_csv("/home/fanis/code/python-db/export/streaks.csv")
+
+    # Group by 'rating_class' and find the average 'count' for each group
+    grouped = df.groupby("num_subjects")
+    streak_counts = grouped.size()
+
+    # Plot the average of the sequential counts
+    ax = streak_counts.plot.bar(x="rating_class", y="count", rot=0, width=0.3)
+    new_patches = []
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+        color = patch.get_facecolor()
+        p_bbox = FancyBboxPatch(
+            (bb.xmin, bb.ymin),
+            abs(bb.width),
+            abs(bb.height),
+            boxstyle="round,pad=-0.0140,rounding_size=0.015",
+            ec="none",
+            fc=color,
+        )
+        patch.remove()
+        new_patches.append(p_bbox)
+    for patch in new_patches:
+        ax.add_patch(patch)
+    plt.title("Number of Times More Than Three Consecutive Ratings Were Given")
+    plt.ylabel("Count")
+    plt.xlabel("Rating Class")
+    # Capitalize the first letter of each word in the legend
+    handles, labels = ax.get_legend_handles_labels()
+    labels = [label.title() for label in labels]
+    ax.legend(handles, labels)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "consecutive_streaks.png"), dpi=300)
+
+
+plot_streaks()
+plot_data()
+plot_data_avg()
 plot_rating_query()
 plot_intervention_ratio_by_subject()
 plot_average_metrics_by_subject()
