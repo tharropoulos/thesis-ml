@@ -1,7 +1,6 @@
 /assets
 /venv
 /.venv
-/plots
-/.vscode
+:w.vscode
 /__pycache__
 .env
