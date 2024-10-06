@@ -1,0 +1,4 @@
+subject,Total Copilot Rewrites,Total Manual Rewrites,Total Copilot Revisions,Total Manual Code Revisions
+Backend,20,3,3,10
+Integration Tests,26,7,30,14
+Unit Tests,32,3,4,3

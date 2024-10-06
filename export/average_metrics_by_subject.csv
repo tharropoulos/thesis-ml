@@ -1,0 +1,4 @@
+subject,Copilot Rewrites,Manual Rewrites,Copilot Revisions,Manual Code Revisions
+Backend,1.8182,0.2727,0.2727,0.9091
+Integration Tests,2.6000,0.7000,3.0000,1.4000
+Unit Tests,4.5714,0.4286,0.5714,0.4286

@@ -1,0 +1,34 @@
+subject,num_failed_or_canceled_subject,type,num_failed_or_canceled_type
+Copilot General,0,OTHER,0
+Publisher Router,0,BACKEND,0
+Publisher Unit Tests,0,TESTING,0
+Publisher Integration Tests,0,TESTING,0
+Developer Router,0,BACKEND,0
+Developer Router (NO CONTEXT GIVEN),0,BACKEND,0
+Developer Unit Tests,0,TESTING,0
+CANCELED,1,BACKEND,1
+Developer Integration Tests,0,TESTING,0
+Feature Router,0,BACKEND,0
+Feature Unit Tests,0,TESTING,0
+Copilot Genreral,0,BACKEND,0
+Feature Integration Tests,0,TESTING,0
+Genre Router,0,BACKEND,0
+Genre Unit Tests,0,TESTING,0
+Manual Intervention,0,TESTING,0
+Genre Integration Tests,0,TESTING,0
+Genre Router,0,LANGUAGE,0
+Platform Router,0,BACKEND,0
+Manual Intervention,0,BACKEND,0
+Platform Unit Tests,0,TESTING,0
+Platform Integration Tests,0,TESTING,0
+Copilot General,0,BACKEND,0
+Game Router,0,BACKEND,0
+Game Router,0,LANGUAGE,0
+Language specific,0,LANGUAGE,0
+Game Unit Tests,0,TESTING,0
+Game Unit Tests,0,LANGUAGE,0
+Game Integration Tests,0,TESTING,0
+Language Specific,0,BACKEND,0
+Review Router,0,BACKEND,0
+Review Integration Tests,0,TESTING,0
+Playlist Integration Tests,0,TESTING,0

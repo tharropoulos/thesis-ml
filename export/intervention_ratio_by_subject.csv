@@ -1,0 +1,4 @@
+subject,Manual Rewrites to Copilot Changes Ratio,Manual Code Revisions to Copilot Revisions Ratio
+Backend,0.1500,3.3333
+Integration Tests,0.2692,0.4667
+Unit Tests,0.0938,0.7500

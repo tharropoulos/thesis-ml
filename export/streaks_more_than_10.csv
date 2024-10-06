@@ -1,0 +1,10 @@
+,start,end,type,length,num_subjects
+0,20,31,positive,12,2
+1,52,65,positive,14,2
+2,97,109,positive,13,2
+3,126,136,negative,11,2
+4,164,179,negative,16,2
+5,234,247,positive,14,2
+6,276,286,negative,11,2
+7,349,363,positive,15,1
+8,455,471,positive,17,3

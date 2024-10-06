@@ -1,0 +1,28 @@
+subject,Average Rating
+Copilot General,-0.6061
+Publisher Router,0.5000
+Publisher Unit Tests,0.9583
+Publisher Integration Tests,1.7368
+Developer Router,0.0000
+Developer Router (NO CONTEXT GIVEN),-2.0000
+Developer Unit Tests,0.1800
+CANCELED,
+Developer Integration Tests,-0.4063
+Feature Router,0.9167
+Feature Unit Tests,0.4000
+Copilot Genreral,-1.0000
+Feature Integration Tests,0.9286
+Genre Router,1.8333
+Genre Unit Tests,1.2500
+Manual Intervention,-1.7143
+Genre Integration Tests,0.5789
+Platform Router,-1.0909
+Platform Unit Tests,0.6000
+Platform Integration Tests,0.4667
+Game Router,0.4211
+Language specific,0.4400
+Game Unit Tests,0.6571
+Game Integration Tests,0.3333
+Review Router,-0.7619
+Review Integration Tests,1.1579
+Playlist Integration Tests,-0.3750

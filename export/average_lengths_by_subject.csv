@@ -1,0 +1,29 @@
+subject,average_length
+CANCELED,1.0
+Copilot General,33.0
+Copilot Genreral,1.0
+Developer Integration Tests,32.0
+Developer Router,24.0
+Developer Router (NO CONTEXT GIVEN),1.0
+Developer Unit Tests,50.0
+Feature Integration Tests,14.0
+Feature Router,12.0
+Feature Unit Tests,15.0
+Game Integration Tests,33.0
+Game Router,19.0
+Game Unit Tests,35.0
+Genre Integration Tests,19.0
+Genre Router,6.0
+Genre Unit Tests,12.0
+Language Specific,24.0
+Language specific,1.0
+Manual Intervention,14.0
+Platform Integration Tests,15.0
+Platform Router,11.0
+Platform Unit Tests,20.0
+Playlist Integration Tests,40.0
+Publisher Integration Tests,19.0
+Publisher Router,10.0
+Publisher Unit Tests,24.0
+Review Integration Tests,19.0
+Review Router,21.0
