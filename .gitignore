@@ -4,3 +4,4 @@
 :w.vscode
 /__pycache__
 .env
+env
