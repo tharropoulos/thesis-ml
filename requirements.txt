@@ -41,7 +41,6 @@ mdurl
 ml-dtypes
 mpmath
 murmurhash
-mysqlclient
 namex
 networkx
 nltk
