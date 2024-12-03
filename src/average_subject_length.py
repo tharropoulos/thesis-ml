@@ -1,61 +1,63 @@
+import os
 import pandas as pd
 
-# Load the general.csv file
-df = pd.read_csv("/home/fanis/code/python-db/export/general.csv")
 
-# Group by 'subject' and calculate the number of unique ids for each subject
-df["subject_length"] = df.groupby("subject")["id"].transform("nunique")
+class SubjectAnalyzer:
+    def __init__(self):
+        self.current_dir = os.getcwd()
+        self.export_dir = os.path.join(self.current_dir, "export")
+        self.data_path = os.path.join(self.export_dir, "general.csv")
 
-# Calculate the average length of all subjects together
-average_length = df["subject_length"].mean()
+    def analyze_subject_lengths(self):
+        df = pd.read_csv(self.data_path)
+        df["subject_length"] = df.groupby("subject")["id"].transform("nunique")
+        average_length = df["subject_length"].mean()
 
-# Create a new DataFrame with the average length
-average_length_df = pd.DataFrame({"average_length": [average_length]})
+        pd.DataFrame({"average_length": [average_length]}).to_csv(
+            os.path.join(self.export_dir, "average_length.csv"),
+            index=False
+        )
 
-# Save the DataFrame to a new CSV file
-average_length_df.to_csv(
-    "/home/fanis/code/python-db/export/average_length.csv", index=False
-)
+    def analyze_streaks(self, min_streak_length=10):
+        df = pd.read_csv(self.data_path)
+        streak = 0
+        streak_start = 0
+        streak_type = None
+        subjects = set()
+        results = []
+
+        for i, row in df.iterrows():
+            rating = row["rating"]
+            subject = row["subject"]
+
+            if (rating > 0 and streak_type == "positive") or (
+                rating < 0 and streak_type == "negative"
+            ):
+                streak += 1
+                subjects.add(subject)
+            else:
+                if streak > min_streak_length:
+                    results.append(
+                        (streak_start, i - 1, streak_type, streak, len(subjects)))
+                streak = 1
+                streak_start = i
+                streak_type = "positive" if rating > 0 else "negative"
+                subjects = {subject}
+
+        if streak > min_streak_length:
+            results.append(
+                (streak_start, i, streak_type, streak, len(subjects)))
+
+        pd.DataFrame(
+            results,
+            columns=["start", "end", "type", "length", "num_subjects"]
+        ).to_csv(os.path.join(self.export_dir, "streaks_more_than_10.csv"), index=False)
+
+    def run_analysis(self):
+        self.analyze_subject_lengths()
+        self.analyze_streaks()
 
 
-# Load the CSV file
-df = pd.read_csv("/home/fanis/code/python-db/export/general.csv")
-
-# Initialize variables
-streak = 0
-streak_start = 0
-streak_type = None
-subjects = set()
-results = []
-
-# Iterate over the rows
-for i, row in df.iterrows():
-    rating = row["rating"]  # replace 'rating' with your column name
-    subject = row["subject"]  # replace 'subject' with your column name
-
-    # Check if the streak continues
-    if (rating > 0 and streak_type == "positive") or (
-        rating < 0 and streak_type == "negative"
-    ):
-        streak += 1
-        subjects.add(subject)
-    else:
-        # Check if the streak was long enough
-        if streak > 10:
-            results.append((streak_start, i - 1, streak_type, streak, len(subjects)))
-
-        # Reset the streak and subjects
-        streak = 1
-        streak_start = i
-        streak_type = "positive" if rating > 0 else "negative"
-        subjects = {subject}
-
-# Check the final streak
-if streak > 10:
-    results.append((streak_start, i, streak_type, streak, len(subjects)))
-
-# Convert the results to a DataFrame and save to a CSV file
-results_df = pd.DataFrame(
-    results, columns=["start", "end", "type", "length", "num_subjects"]
-)
-results_df.to_csv("/home/fanis/code/python-db/export/streaks_more_than_10.csv")
+if __name__ == "__main__":
+    analyzer = SubjectAnalyzer()
+    analyzer.run_analysis()
