@@ -1,5 +1,4 @@
 import os
-import pdb
 
 import joblib
 import matplotlib as mpl
@@ -9,16 +8,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import FancyBboxPatch
-from scipy.stats import mode
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.feature_selection import RFE, SelectKBest, chi2
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 
 from metaCost import MetaCost
@@ -36,7 +30,8 @@ def load_and_preprocess_data():
 
     for feature in categorical_features:
         df[feature] = le.fit_transform(df[feature])
-        label_mappings[feature] = dict(zip(le.transform(le.classes_), le.classes_))
+        label_mappings[feature] = dict(
+            zip(le.transform(le.classes_), le.classes_))
 
     df["createdAt"] = pd.to_datetime(df["createdAt"])
 
@@ -50,13 +45,16 @@ def load_and_preprocess_data():
         {
             "prompt": "first",
             "response": lambda x: (
-                x.value_counts().index[0] if not x.value_counts().empty else None
+                x.value_counts().index[0] if not x.value_counts(
+                ).empty else None
             ),
             "subject": lambda x: (
-                x.value_counts().index[0] if not x.value_counts().empty else None
+                x.value_counts().index[0] if not x.value_counts(
+                ).empty else None
             ),
             "type": lambda x: (
-                x.value_counts().index[0] if not x.value_counts().empty else None
+                x.value_counts().index[0] if not x.value_counts(
+                ).empty else None
             ),
             "failed": "mean",
             "createdAt": "mean",
@@ -149,14 +147,16 @@ def train_models(X_train, y_train):
     models_to_train = {}
 
     for model_name, filename in model_files.items():
-        filepath = os.path.join(os.getcwd(), filename)  # Check in root directory
+        # Check in root directory
+        filepath = os.path.join(os.getcwd(), filename)
         if os.path.exists(filepath):
             print(f"Loading existing model: {model_name}")
             existing_models[model_name] = joblib.load(filepath)
         else:
             print(f"Model not found, will train: {model_name}")
             if model_name == "Random Forest":
-                models_to_train[model_name] = RandomForestClassifier(random_state=42)
+                models_to_train[model_name] = RandomForestClassifier(
+                    random_state=42)
             elif model_name == "SVM":
                 models_to_train[model_name] = SVC()
             elif model_name == "Gradient Boosting":
@@ -281,7 +281,8 @@ def plot_results(models, X_test, y_test):
             ax.add_patch(patch)
 
     # Adjust layout and save confusion matrices
-    plt.tight_layout(rect=[0.05, 0.05, 0.95, 0.95])  # Add padding around the plots
+    # Add padding around the plots
+    plt.tight_layout(rect=[0.05, 0.05, 0.95, 0.95])
     plt.savefig(
         os.path.join(current_dir, "plots", "confusion_matrix.png"),
         bbox_inches="tight",
@@ -345,7 +346,8 @@ def plot_best_models_per_category(
     current_dir = os.getcwd()
 
     # Convert y_test to numpy array if it's a pandas Series
-    y_test_arr = y_test.to_numpy() if hasattr(y_test, "to_numpy") else np.array(y_test)
+    y_test_arr = y_test.to_numpy() if hasattr(
+        y_test, "to_numpy") else np.array(y_test)
 
     # Get the indices of the test set
     if hasattr(X_test, "index"):
@@ -381,7 +383,8 @@ def plot_best_models_per_category(
                         cat_y_test = y_test_arr[cat_indices]
                         cat_y_pred = y_pred[cat_indices]
                         cat_accuracy = np.mean(cat_y_test == cat_y_pred)
-                        model_performances[model_name][f"category_{cat}"] = cat_accuracy
+                        model_performances[model_name][f"category_{
+                            cat}"] = cat_accuracy
 
     # Find best models for each category
     category_best_models = {}
@@ -392,7 +395,8 @@ def plot_best_models_per_category(
             if f"category_{cat}" in perf
         }
         # Get top 2 models for this category
-        best_models = sorted(cat_scores.items(), key=lambda x: x[1], reverse=True)[:2]
+        best_models = sorted(cat_scores.items(),
+                             key=lambda x: x[1], reverse=True)[:2]
         category_best_models[cat] = best_models
 
     # Plot confusion matrices for best models per category
@@ -418,7 +422,8 @@ def plot_best_models_per_category(
                     ]
 
                     cm = confusion_matrix(y_test_cat, y_pred_cat)
-                    cm_normalized = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+                    cm_normalized = cm.astype(
+                        "float") / cm.sum(axis=1)[:, np.newaxis]
 
                     # Create subplot
                     ax = plt.subplot(num_categories, 2, plot_idx)
@@ -437,7 +442,8 @@ def plot_best_models_per_category(
 
                     # Add title with model name and metrics
                     original_cat_name = label_mappings[category][cat].title()
-                    title = f"Best Model #{model_idx + 1} for {category.capitalize()}: {original_cat_name}\n{model_name}\nCategory Acc: {score:.2f}, Overall Acc: {model_performances[model_name]['overall_accuracy']:.2f}"
+                    title = f"Best Model #{model_idx + 1} for {category.capitalize()}: {original_cat_name}\n{model_name}\nCategory Acc: {
+                        score:.2f}, Overall Acc: {model_performances[model_name]['overall_accuracy']:.2f}"
                     ax.set_title(title, size=12, pad=20)
 
     plt.tight_layout(rect=[0.05, 0.05, 0.95, 0.95])
@@ -474,8 +480,10 @@ def plot_best_models_per_category(
         bars = []
         bars.append(
             ax.bar(
-                x - width * (min(6, len(unique_categories) - plot_num * 6) / 2),
-                [model_performances[m]["overall_accuracy"] for m in all_best_models],
+                x - width *
+                (min(6, len(unique_categories) - plot_num * 6) / 2),
+                [model_performances[m]["overall_accuracy"]
+                    for m in all_best_models],
                 width,
                 label="Overall",
                 alpha=0.8,
@@ -483,7 +491,7 @@ def plot_best_models_per_category(
         )
 
         # Plot category-specific accuracies
-        for i, cat in enumerate(unique_categories[plot_num * 6 : (plot_num + 1) * 6]):
+        for i, cat in enumerate(unique_categories[plot_num * 6: (plot_num + 1) * 6]):
             category_accs = []
             for model in all_best_models:
                 acc = model_performances[model].get(f"category_{cat}", 0)
@@ -541,7 +549,8 @@ def plot_best_models_per_category(
 
 
 def analyze_all_categories(models, X_test, y_test, df):
-    categories = ["subject", "type"]  # Add other categorical features as needed
+    # Add other categorical features as needed
+    categories = ["subject", "type"]
     for category in categories:
         plot_best_models_per_category(models, X_test, y_test, df, category)
 
@@ -564,7 +573,8 @@ def plot_best_models_per_class(models, X_test, y_test):
             for model_name, perf in model_performances.items()
         }
         # Get top 2 models for this class
-        best_models = sorted(class_scores.items(), key=lambda x: x[1], reverse=True)[:2]
+        best_models = sorted(class_scores.items(),
+                             key=lambda x: x[1], reverse=True)[:2]
         class_best_models[class_label] = best_models
 
     # Plot confusion matrices for best models per class
@@ -597,7 +607,8 @@ def plot_best_models_per_class(models, X_test, y_test):
 
             # Add title with model name and metrics
             accuracy = models[model_name].score(X_test, y_test)
-            title = f"Best Model #{model_idx + 1} for Class {class_label}\n{model_name}\nAccuracy: {accuracy:.2f}, F1: {score:.2f}"
+            title = f"Best Model #{model_idx + 1} for Class {class_label}\n{
+                model_name}\nAccuracy: {accuracy:.2f}, F1: {score:.2f}"
             ax.set_title(title, size=12, pad=20)
 
             # Add rounded corners
@@ -702,7 +713,8 @@ def plot_best_models_per_class(models, X_test, y_test):
 
     plt.tight_layout()
     plt.savefig(
-        os.path.join(current_dir, "plots", "best_models_metrics_comparison.png"),
+        os.path.join(current_dir, "plots",
+                     "best_models_metrics_comparison.png"),
         bbox_inches="tight",
         dpi=300,
     )
@@ -721,331 +733,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# # Load the data
-# current_dir = os.getcwd()
-# df = pd.read_csv(os.path.join(current_dir, "export", "processed_data.csv"))
-
-# # Select only numeric columns from the DataFrame
-# numeric_cols = df.select_dtypes(include=[np.number])
-
-# # Compute the correlation matrix
-# corrmat = numeric_cols.corr()
-
-# top_corr_features = corrmat.index
-# plt.figure(figsize=(20, 20))
-
-# # Plot heat map
-# g = sns.heatmap(df[top_corr_features].corr(), annot=True, cmap="RdYlGn")
-# plt.savefig("heatmap.png")
-
-
-# # Preprocess the data
-# # Convert categorical variables into numerical ones
-# le = LabelEncoder()
-# categorical_features = ["subject", "type"]
-# for feature in categorical_features:
-#     df[feature] = le.fit_transform(df[feature])
-
-# # Convert 'createdAt' to datetime
-# df["createdAt"] = pd.to_datetime(df["createdAt"])
-
-# # Convert 'createdAt' to the number of seconds since the Unix epoch
-# df["createdAt"] = (df["createdAt"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")
-
-# # Convert 'rating' to binary
-# df["rating"] = df["rating"].apply(lambda x: 1 if x > 0 else 0)
-
-# # Group by 'group' and aggregate
-# grouped = df.groupby("group").agg(
-#     {
-#         "prompt": "first",
-#         "response": lambda x: (
-#             x.value_counts().index[0] if not x.value_counts().empty else None
-#         ),
-#         "subject": lambda x: (
-#             x.value_counts().index[0] if not x.value_counts().empty else None
-#         ),
-#         "type": lambda x: (
-#             x.value_counts().index[0] if not x.value_counts().empty else None
-#         ),
-#         "failed": "mean",
-#         "createdAt": "mean",
-#         "canceled": "mean",
-#         "rating": "mean",
-#         "is_continue": "mean",
-#     }
-# )
-
-# vectorizer = TfidfVectorizer()
-
-# grouped["prompt"] = grouped["prompt"].fillna("")
-
-# # Fit and transform the 'prompt' column
-# X_prompt = vectorizer.fit_transform(grouped["prompt"])
-
-# # Convert the result to a DataFrame
-# X_prompt_df = pd.DataFrame(X_prompt.toarray())
-
-# # Set the columns of the DataFrame
-# X_prompt_df.columns = vectorizer.get_feature_names_out()
-
-# # Add the DataFrame to the original DataFrame with a suffix for overlapping column names
-# grouped = grouped.join(X_prompt_df, rsuffix="_prompt")
-
-# # Drop the original 'prompt' column
-# grouped = grouped.drop(columns=["prompt"])
-
-# # Round the mean ratings to the nearest integer
-# print(grouped)
-
-# # Split the data into training and testing sets
-# # Split the data into training and testing sets
-# X = grouped.drop("rating", axis=1)
-
-# # Get the numerical columns
-# numerical_cols = X.select_dtypes(include=[np.number]).columns
-
-# y = grouped["rating"]
-
-# # Fill NA values in numerical columns with their mean
-# X[numerical_cols] = X[numerical_cols].fillna(X[numerical_cols].mean())
-
-# # Select only the numerical columns
-# X = X.select_dtypes(include=[np.number])
-
-
-# # Define the parameter grid
-# param_grid = {
-#     "n_estimators": [100, 200, 300, 400, 500],
-#     "max_depth": [None, 10, 20, 30, 40, 50],
-#     "min_samples_split": [2, 5, 10],
-#     "min_samples_leaf": [1, 2, 4],
-#     "bootstrap": [True, False],
-# }
-
-# # Create a base model
-# rf = RandomForestClassifier(random_state=42)
-
-# # Instantiate the grid search model
-# grid_search = GridSearchCV(
-#     estimator=rf, param_grid=param_grid, cv=3, n_jobs=-1, verbose=2
-# )
-
-# # Fit the grid search to the data
-# grid_search.fit(X_train, y_train)
-
-# # Get the best parameters
-# best_params_rdc = grid_search.best_params_
-
-# # Train a new classifier using the best parameters from the grid search
-# clf_rdc = RandomForestClassifier(**best_params_rdc)
-# clf_rdc.fit(X_train, y_train)
-
-# # Evaluate the new classifier
-# y_pred_rdc = clf_rdc.predict(X_test)
-
-
-# # Calculatge class frequencies
-# class_freq = y_train.value_counts(normalize=True)
-
-# # Calculate the inverse of class freq
-# inverse_class_freq = 1 / class_freq
-
-# # Create a dictionary with the class weights
-# C = np.zeros((len(class_freq), len(class_freq)))
-
-# np.fill_diagonal(C, inverse_class_freq)
-
-# # Create a DataFrame from your training data
-# S = pd.DataFrame(X_train)
-# S["target"] = y_train
-
-# # Create a MetaCost instance
-# metacost = MetaCost(S, clf_rdc, C)
-
-# # Fit the MetaCost model
-# model = metacost.fit("target", len(class_freq))
-
-# # Now you can use the model to make predictions
-# y_pred_metacost_rdf = model.predict(X_test)
-
-
-# from sklearn.svm import SVC
-# from sklearn.ensemble import GradientBoostingClassifier
-
-# # Define the parameter grid for SVM
-# param_grid_svm = {
-#     "C": [0.1, 1, 10, 100, 1000],
-#     "gamma": [1, 0.1, 0.01, 0.001, 0.0001],
-#     "kernel": ["rbf"],
-# }
-
-# # Create a base model for SVM
-# svm = SVC()
-
-# # Instantiate the grid search model for SVM
-# grid_search_svm = GridSearchCV(
-#     estimator=svm, param_grid=param_grid_svm, cv=3, n_jobs=-1, verbose=2
-# )
-
-# # Fit the grid search to the data
-# grid_search_svm.fit(X_train, y_train)
-
-# # Get the best parameters
-# best_params_svm = grid_search_svm.best_params_
-
-# # Train a new classifier using the best parameters from the grid search
-# clf_svm = SVC(**best_params_svm)
-# clf_svm.fit(X_train, y_train)
-
-# # Evaluate the new classifier
-# y_pred_svm = clf_svm.predict(X_test)
-
-# # Define the parameter grid for Gradient Boosting
-# param_grid_gb = {
-#     "n_estimators": [100, 200, 300, 400, 500],
-#     "learning_rate": [0.1, 0.05, 0.02, 0.01],
-#     "max_depth": [4, 6, 8],
-#     "min_samples_leaf": [20, 50, 100, 150],
-# }
-
-# # Create a base model for Gradient Boosting
-# gb = GradientBoostingClassifier()
-
-# # Instantiate the grid search model for Gradient Boosting
-# grid_search_gb = GridSearchCV(
-#     estimator=gb, param_grid=param_grid_gb, cv=3, n_jobs=-1, verbose=2
-# )
-
-# # Fit the grid search to the data
-# grid_search_gb.fit(X_train, y_train)
-
-# # Get the best parameters
-# best_params_gb = grid_search_gb.best_params_
-
-# # Train a new classifier using the best parameters from the grid search
-# clf_gb = GradientBoostingClassifier(**best_params_gb)
-# clf_gb.fit(X_train, y_train)
-
-# # Evaluate the new classifier
-# y_pred_gb = clf_gb.predict(X_test)
-
-
-# # Naive Bayes
-# gnb = GaussianNB()
-# gnb.fit(X_train, y_train)
-# y_pred_gnb = gnb.predict(X_test)
-
-
-# Print the classification report
-# print("METACOST MODEL WITH RDC\n")
-# print(classification_report(y_test, y_pred_metacost_rdf))
-
-# print("NAIVE BAYES \n")
-# print(classification_report(y_test, y_pred_gnb))
-
-# print("GRADIENT BOOSTING \n")
-# print(best_params_gb)
-# print(classification_report(y_test, y_pred_gb))
-
-# print("SVM \n")
-# print(best_params_svm)
-# print(classification_report(y_test, y_pred_svm))
-
-# print("RDC \n")
-# print(best_params_rdc)
-# print(classification_report(y_test, y_pred_rdc))
-
-# from sklearn.metrics import confusion_matrix
-
-# import matplotlib as mpl
-# import matplotlib as mpl
-# import matplotlib.pyplot as plt
-
-# mpl.style.use("mocha")
-# import seaborn as sns
-
-# # List of models
-# models = [clf_rdc, clf_svm, clf_gb, gnb, model]
-# model_names = ["Random Forest", "SVM", "Gradient Boosting", "Naive Bayes", "MetaCost"]
-
-# # Initialize the figure
-# plt.figure(figsize=(10, 15))
-
-# from matplotlib.patches import FancyBboxPatch
-
-# for i, model in enumerate(models):
-#     # Compute confusion matrix
-#     cm = confusion_matrix(y_test, model.predict(X_test))
-
-#     # Normalize confusion matrix
-#     cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
-
-#     # Subplot
-#     ax = plt.subplot(len(models), 1, i + 1)
-#     sns.heatmap(cm, annot=True, fmt=".2f", linewidths=0.5, square=True, cmap="Blues_r")
-#     plt.ylabel("Actual label")
-#     plt.xlabel("Predicted label")
-#     all_sample_title = f"{model_names[i]} Accuracy Score: {model.score(X_test, y_test)}"
-#     ax.set_title(all_sample_title, size=15, loc="center")  # Center the title
-
-#     new_patches = []
-#     for patch in reversed(ax.patches):
-#         bb = patch.get_bbox()
-#         color = patch.get_facecolor()
-#         p_bbox = FancyBboxPatch(
-#             (bb.xmin, bb.ymin),
-#             abs(bb.width),
-#             abs(bb.height),
-#             boxstyle="round,pad=-0,rounding_size=0.015",
-#             ec="none",
-#             fc=color,
-#         )
-#         patch.remove()
-#         new_patches.append(p_bbox)
-#     for patch in new_patches:
-#         ax.add_patch(patch)
-
-#     plt.tight_layout()
-#     plt.savefig(
-#         os.path.join(
-#             "export",
-#             f'confusion_matrix_{model_names[i].replace(" ", "_").lower()}.png',
-#         ),
-#         dpi=300,
-#     )
-
-# # Show the plot
-# plt.tight_layout()
-# plt.savefig(os.path.join(current_dir, "plots", "confusion_matrix.png"))
-
-# # Bar chart comparison
-# accuracies = [model.score(X_test, y_test) for model in models]
-
-# plt.figure(figsize=(10, 5))
-# ax = plt.gca()
-# bars = ax.bar(model_names, accuracies)
-
-# new_patches = []
-# for patch in reversed(ax.patches):
-#     bb = patch.get_bbox()
-#     color = patch.get_facecolor()
-#     p_bbox = FancyBboxPatch(
-#         (bb.xmin, bb.ymin),
-#         abs(bb.width),
-#         abs(bb.height),
-#         boxstyle="round,pad=-0.0140,rounding_size=0.015",
-#         ec="none",
-#         fc=color,
-#     )
-#     patch.remove()
-#     new_patches.append(p_bbox)
-# for patch in new_patches:
-#     ax.add_patch(patch)
-
-# plt.xlabel("Models")
-# plt.ylabel("Accuracy")
-# plt.title("Model Accuracy Comparison")
-# plt.savefig(os.path.join(current_dir, "plots", "model_accuracy_comparison.png"))

@@ -76,7 +76,8 @@ with open(os.path.join(current_dir, "assets", "glove.6B.100d.txt")) as f:
             embeddings_index[word] = coefs
         except ValueError:
             print(
-                f"Failed to convert embedding values to float for word '{word}', skipping this word."
+                f"Failed to convert embedding values to float for word '{
+                    word}', skipping this word."
             )
 
 # Create an embedding matrix
@@ -107,7 +108,8 @@ model.add(GRU(128))  # Replaced LSTM with GRU
 model.add(Dropout(0.5))
 model.add(Dense(128, activation="relu"))
 model.add(Dense(64, activation="relu"))
-model.add(Dense(5, activation="softmax"))  # Assuming you have 5 different ratings
+# Assuming you have 5 different ratings
+model.add(Dense(5, activation="softmax"))
 
 # Compile the model
 model.compile(
