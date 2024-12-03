@@ -1,64 +1,97 @@
+import os
 import itertools
-
+from dataclasses import dataclass
+from typing import Tuple, List, Iterator
 import pandas as pd
 
-# Load the general.csv file
-df = pd.read_csv("/home/fanis/code/python-db/export/general.csv")
 
-# Replace the ratings 1 and 2 with 'positive' and -1 and -2 with 'negative'
-df["rating"] = df["rating"].replace(
-    {1: "positive", 2: "positive", -1: "negative", -2: "negative"}
-)
+@dataclass
+class RatingSequence:
+    rating: str
+    length: int
+    start_id: int
+    end_id: int
 
-# Sort the DataFrame
-df = df.sort_values("id")
 
-# Initialize the maximum positive and negative lengths and the corresponding starting and ending ids
-max_pos_length = max_neg_length = 0
-start_pos_id = end_pos_id = start_neg_id = end_neg_id = None
+class RatingsAnalyzer:
+    def __init__(self):
+        self.current_dir = os.getcwd()
+        self.export_dir = os.path.join(self.current_dir, "export")
+        self.df = None
 
-# Initialize the total length and the number of groups
-total_length = num_groups = 0
+    def process(self) -> None:
+        """Main processing pipeline."""
+        self.load_and_prepare_data()
+        max_sequences = self.find_max_sequences()
+        avg_length = self.calculate_average_length()
+        self.save_results(max_sequences, avg_length)
 
-# Group by 'rating' and iterate over the groups
-for rating, group in itertools.groupby(df.itertuples(), lambda x: x.rating):
-    # Convert the group to a list
-    group = list(group)
+    def load_and_prepare_data(self) -> None:
+        """Load and preprocess the data."""
+        self.df = pd.read_csv(os.path.join(self.export_dir, "general.csv"))
+        self.df["rating"] = self.df["rating"].replace({
+            1: "positive",
+            2: "positive",
+            -1: "negative",
+            -2: "negative"
+        })
+        self.df = self.df.sort_values("id")
 
-    # If the rating is sequential
-    if rating in ["positive", "negative"]:
-        # Update the total length and the number of groups
-        total_length += len(group)
-        num_groups += 1
+    def find_max_sequences(self) -> Tuple[RatingSequence, RatingSequence]:
+        """Find longest positive and negative sequences."""
+        max_pos = RatingSequence("positive", 0, None, None)
+        max_neg = RatingSequence("negative", 0, None, None)
 
-        # If the length of the group is greater than the maximum length
-        if len(group) > max_pos_length and rating == "positive":
-            # Update the maximum positive length and the corresponding starting and ending ids
-            max_pos_length = len(group)
-            start_pos_id = group[0].id
-            end_pos_id = group[-1].id
-        elif len(group) > max_neg_length and rating == "negative":
-            # Update the maximum negative length and the corresponding starting and ending ids
-            max_neg_length = len(group)
-            start_neg_id = group[0].id
-            end_neg_id = group[-1].id
+        for rating, group in self._group_sequential_ratings():
+            group_list = list(group)
+            if rating == "positive":
+                max_pos = self._update_max_sequence(max_pos, group_list)
+            elif rating == "negative":
+                max_neg = self._update_max_sequence(max_neg, group_list)
 
-# Calculate the average length of the sequential ratings
-average_length = total_length / num_groups
+        return max_pos, max_neg
 
-# Create a new DataFrame with the maximum sequential ratings and save it to a CSV file
-max_ratings_df = pd.DataFrame(
-    {
-        "rating": ["positive", "negative"],
-        "length": [max_pos_length, max_neg_length],
-        "start_id": [start_pos_id, start_neg_id],
-        "end_id": [end_pos_id, end_neg_id],
-    }
-)
-max_ratings_df.to_csv("/home/fanis/code/python-db/export/max_ratings.csv", index=False)
+    def calculate_average_length(self) -> float:
+        """Calculate average length of sequential ratings."""
+        sequences = [(rating, list(group))
+                     for rating, group in self._group_sequential_ratings()
+                     if rating in ["positive", "negative"]]
 
-# Create another DataFrame with the average length and save it to another CSV file
-average_length_df = pd.DataFrame({"average_length": [average_length]})
-average_length_df.to_csv(
-    "/home/fanis/code/python-db/export/average_length.csv", index=False
-)
+        total_length = sum(len(group) for _, group in sequences)
+        return total_length / len(sequences) if sequences else 0
+
+    def _group_sequential_ratings(self) -> Iterator:
+        """Group ratings into sequential chunks."""
+        return itertools.groupby(self.df.itertuples(), lambda x: x.rating)
+
+    @staticmethod
+    def _update_max_sequence(current: RatingSequence, group: List) -> RatingSequence:
+        """Update maximum sequence if current group is longer."""
+        if len(group) > current.length:
+            return RatingSequence(
+                rating=current.rating,
+                length=len(group),
+                start_id=group[0].id,
+                end_id=group[-1].id
+            )
+        return current
+
+    def save_results(self, max_sequences: Tuple[RatingSequence, RatingSequence],
+                     avg_length: float) -> None:
+        """Save results to CSV files."""
+        max_pos, max_neg = max_sequences
+
+        pd.DataFrame({
+            "rating": ["positive", "negative"],
+            "length": [max_pos.length, max_neg.length],
+            "start_id": [max_pos.start_id, max_neg.start_id],
+            "end_id": [max_pos.end_id, max_neg.end_id]
+        }).to_csv(os.path.join(self.export_dir, "max_ratings.csv"), index=False)
+
+        pd.DataFrame({"average_length": [avg_length]}).to_csv(
+            os.path.join(self.export_dir, "average_length.csv"), index=False)
+
+
+if __name__ == "__main__":
+    analyzer = RatingsAnalyzer()
+    analyzer.process()
